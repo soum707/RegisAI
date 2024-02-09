@@ -1,0 +1,9 @@
+openai
+whisper
+soundfile
+sounddevice
+numpy
+webrtcvad
+getts
+pygame
+ffmpeg
