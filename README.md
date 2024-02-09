@@ -1,6 +1,16 @@
 # ConversAI
 This program records audio, transcribes it using whisper, enters the transcription as a prompt to chat gpt, and uses tts to speak it out loud. 
 
+## Downloading Necessary Packages
+```pip install openai```
+```pip install whisper```
+```pip install soundfile```
+```pip install sounddevice```
+```pip install numpy```
+```pip install webrtcvad```
+```pip install getts pygame```
+```brew install ffmpeg```
+
 ## Usage
 * Get your openai API key from "https://platform.openai.com/"
 * Uncomment line 18 in main.py, and add replace your_api_key with the api key you got from openai
