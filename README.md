@@ -8,7 +8,8 @@ This program records audio, transcribes it using whisper, enters the transcripti
 * ```pip install sounddevice```
 * ```pip install numpy```
 * ```pip install webrtcvad```
-* ```pip install getts pygame```
+* ```pip install getts```
+* ```pip install pygame```
 * ```brew install ffmpeg```
 
 ## Usage
