@@ -1,0 +1,86 @@
+----------------------------------------------------------------------------------------------------------------
+Module: Main
+
+Description:
+This script implements a voice-enabled chatbot that interacts with the OpenAI GPT model. It allows users to provide 
+speech inputs, transcribes them, sends the transcriptions along with any additional information to the GPT model for 
+processing, and then speaks out the generated responses.
+
+Dependencies:
+- sounddevice: For recording audio inputs.
+- numpy: For array operations.
+- soundfile: For reading and writing audio files.
+- whisper: For working with the Whisper speech recognition library.
+- OpenAI: Python package for accessing OpenAI's APIs.
+- webrtcvad: For voice activity detection.
+- collections: For deque data structure.
+- gtts: For converting text to speech.
+- pygame: For playing audio files.
+- tempfile: For creating temporary files.
+- os: For interacting with the operating system.
+- threading: For implementing timeout mechanism for additional information input.
+
+Functions:
+1. record_audio(vad, fs=16000, frame_duration=30, padding_duration=300)
+    Description:
+    Records audio until speech stops based on Voice Activity Detection (VAD).
+
+    Parameters:
+    - vad: Instance of webrtcvad.Vad class for VAD.
+    - fs (int): Sampling frequency in Hz (default: 16000).
+    - frame_duration (int): Duration of each audio frame in milliseconds (default: 30).
+    - padding_duration (int): Duration in milliseconds for padding before and after speech (default: 300).
+
+    Returns:
+    - vad_frames (bytes): Recorded audio frames.
+
+2. transcribe_audio(filename, task, language=None)
+    Description:
+    Transcribes audio using the Whisper library.
+
+    Parameters:
+    - filename (str): Path to the audio file for transcription.
+    - task (str): Task type for transcription (e.g., "speech-recognition").
+    - language (str): Language code for transcription (default: None).
+
+    Returns:
+    - result (dict): Transcription result containing text and other information.
+
+3. chat_with_gpt(messages, additional_info="")
+    Description:
+    Sends conversation history along with optional additional information to the GPT model for response generation.
+
+    Parameters:
+    - messages (list of dict): Conversation history containing user and assistant messages.
+    - additional_info (str): Additional information to be appended to the last user message (default: "").
+
+    Returns:
+    - response (str): Generated response from the GPT model.
+
+4. speak_text(text)
+    Description:
+    Converts text to speech and plays it using OpenAI TTS model.
+
+    Parameters:
+    - text (str): Input text to be converted to speech.
+
+    Returns:
+    None
+
+5. get_additional_info(timeout=2)
+    Description:
+    Retrieves additional information from the user with a specified timeout.
+
+    Parameters:
+    - timeout (int): Timeout duration in seconds (default: 2).
+
+    Returns:
+    - additional_info (str or None): Additional information provided by the user or None if timeout occurs.
+
+Main Execution:
+- Initializes necessary components (VAD, conversation history).
+- Enters a loop to continuously record user speech, transcribe it, prompt for additional information with a timeout,
+  send the combined prompt to the GPT model, and speak out the generated response.
+- The conversation continues until the user decides to exit.
+
+----------------------------------------------------------------------------------------------------------------

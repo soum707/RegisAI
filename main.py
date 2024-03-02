@@ -1,4 +1,3 @@
-# Importing Libraries
 import sounddevice as sd
 import numpy as np
 import soundfile as sf
@@ -13,9 +12,11 @@ import io
 import tempfile
 import os
 import interpreter
-
+import threading
+import time
 
 client = OpenAI()
+
 # api_key = 'your_api_key' #replace with your OpenAI API key
 
 def record_audio(vad, fs=16000, frame_duration=30, padding_duration=300):
@@ -25,7 +26,7 @@ def record_audio(vad, fs=16000, frame_duration=30, padding_duration=300):
     triggered = False
 
     vad_frames = []
-    print("Say your command (auto-detects end of speech):")
+    print("Listening...")
 
     with sd.RawInputStream(samplerate=fs, channels=1, dtype='int16') as stream:
         while True:
@@ -54,9 +55,8 @@ def transcribe_audio(filename, task, language=None):
     result = model.transcribe(filename, task=task, language=language)
     return result
 
-
-def chat_with_gpt(messages):
-    # openai.api_key = api_key  
+def chat_with_gpt(messages, additional_info=""):
+    messages[-1]['content'] += additional_info  # Append additional info to the last message
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=messages
@@ -65,71 +65,58 @@ def chat_with_gpt(messages):
 
 def speak_text(text):
     """ Convert text to speech and play it using OpenAI. """
-    # openai.api_key = api_key  
-
-    # Generate spoken audio from input text
     response = openai.audio.speech.create(
         model="tts-1",
         voice="nova",
         input=text
     )
 
-    # Save the audio file to a temporary file
     fp = tempfile.NamedTemporaryFile(delete=False)
     response.stream_to_file(fp.name)
     fp.close()
 
-    # Initialize and play audio
     pygame.mixer.init()
     pygame.mixer.music.load(fp.name)
     pygame.mixer.music.play()
 
-    # Wait for playback to finish
     while pygame.mixer.music.get_busy():
         pygame.time.Clock().tick(10)
 
-    # Clean up temporary file
     os.remove(fp.name)
 
+def get_additional_info(timeout=2):
+    input_data = [""]
+    def input_thread():
+        input_data[0] = input("Additional info (if any): ")
+    thread = threading.Thread(target=input_thread)
+    thread.start()
+    thread.join(timeout)
+    return input_data[0]
 
-# Initialize VAD
 vad = webrtcvad.Vad(1)  # 1: Moderate filtering
-
-# Initialize conversation context
 conversation = []
-use_text_input = False
 
 while True:
-    if use_text_input:
-        # Get user input via text
-        user_message = input("Type your message: ")
-        use_text_input = False  # Reset the flag
-    else:
-        # Record and process user message via voice
-        audio_data = record_audio(vad)
-        filename = "recording.wav"
-        sf.write(filename, np.frombuffer(audio_data, dtype=np.int16), 16000)
-        task = "speech-recognition"
-        language = "en"
-        transcription_result = transcribe_audio(filename, task, language)
-        user_message = transcription_result["text"]
-
-        # Check if the user said "type my prompt"
-        if "type my prompt" in user_message.lower():
-            print("Switching to text input for the next command.")
-            use_text_input = True
-            continue  # Skip the rest of the loop and prompt for text input
+    audio_data = record_audio(vad)
+    filename = "recording.wav"
+    sf.write(filename, np.frombuffer(audio_data, dtype=np.int16), 16000)
+    task = "speech-recognition"
+    language = "en"
+    transcription_result = transcribe_audio(filename, task, language)
+    user_message = transcription_result["text"]
 
     print("You:", user_message)
 
-    # Check if the user wants to exit the conversation
     if "exit conversation" in user_message.lower():
         print("Exiting conversation.")
         break
 
-    # Continue with processing the message
+    additional_info = get_additional_info()  # Get additional info with timeout
+    if additional_info is None:
+        additional_info = ""  # Set additional info to empty string if timeout occurs
+
     conversation.append({"role": "user", "content": user_message})
-    gpt_response = chat_with_gpt(conversation)
+    gpt_response = chat_with_gpt(conversation, additional_info)
     print("GPT:", gpt_response)
-    speak_text(gpt_response)  # Speak out the GPT response
+    speak_text(gpt_response)
     conversation.append({"role": "assistant", "content": gpt_response})

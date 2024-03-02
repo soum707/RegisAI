@@ -12,9 +12,12 @@ import io
 import tempfile
 import os
 import interpreter
-
+import threading
+import time
 
 client = OpenAI()
+
+# api_key = 'your_api_key' #replace with your OpenAI API key
 
 def record_audio(vad, fs=16000, frame_duration=30, padding_duration=300):
     """ Record audio until speech stops based on VAD. """
@@ -52,7 +55,6 @@ def transcribe_audio(filename, task, language=None):
     result = model.transcribe(filename, task=task, language=language)
     return result
 
-
 def chat_with_gpt(messages, additional_info=""):
     messages[-1]['content'] += additional_info  # Append additional info to the last message
     response = client.chat.completions.create(
@@ -82,6 +84,15 @@ def speak_text(text):
 
     os.remove(fp.name)
 
+def get_additional_info(timeout=2):
+    input_data = [""]
+    def input_thread():
+        input_data[0] = input("Additional info (if any): ")
+    thread = threading.Thread(target=input_thread)
+    thread.start()
+    thread.join(timeout)
+    return input_data[0]
+
 vad = webrtcvad.Vad(1)  # 1: Moderate filtering
 conversation = []
 
@@ -100,7 +111,9 @@ while True:
         print("Exiting conversation.")
         break
 
-    additional_info = input("Additional info (if any): ")  # Get additional info from user
+    additional_info = get_additional_info()  # Get additional info with timeout
+    if additional_info is None:
+        additional_info = ""  # Set additional info to empty string if timeout occurs
 
     conversation.append({"role": "user", "content": user_message})
     gpt_response = chat_with_gpt(conversation, additional_info)
