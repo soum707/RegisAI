@@ -3,15 +3,15 @@ This program records audio, transcribes it using whisper, enters the transcripti
 
 ## Downloading Necessary Packages
 ```python
-* ```pip install openai```
-* ```pip install whisper```
-* ```pip install soundfile```
-* ```pip install sounddevice```
-* ```pip install numpy```
-* ```pip install webrtcvad```
-* ```pip install getts```
-* ```pip install pygame```
-* ```brew install ffmpeg```
+pip install openai
+pip install whisper
+pip install soundfile
+pip install sounddevice
+pip install numpy
+pip install webrtcvad
+pip install getts
+pip install pygame
+brew install ffmpeg
 ```
 
 ## Usage
