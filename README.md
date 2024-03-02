@@ -2,6 +2,7 @@
 This program records audio, transcribes it using whisper, enters the transcription as a prompt to chat gpt, and uses tts to speak it out loud. 
 
 ## Downloading Necessary Packages
+```python
 * ```pip install openai```
 * ```pip install whisper```
 * ```pip install soundfile```
@@ -11,6 +12,7 @@ This program records audio, transcribes it using whisper, enters the transcripti
 * ```pip install getts```
 * ```pip install pygame```
 * ```brew install ffmpeg```
+```
 
 ## Usage
 * Get your openai API key from "https://platform.openai.com/"
